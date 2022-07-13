@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head><title>Sample</title></head>
+  <body>
+    <p>You can allow web push notification.</p>
+    <script type="text/javascript">
+      function urlB64ToUint8Array (base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
+      window.addEventListener('load', async () => {
+        const PUBLIC_KEY = 'TODO set public key';
+        const applicationServerKey = urlB64ToUint8Array(PUBLIC_KEY);
+        if ('serviceWorker' in navigator) {
+          const timestamp = Date.now()
+          window.sw = await navigator.serviceWorker.register('/serviceWorker.js?' + String(timestamp), {scope: '/'});
+          const subscription = await window.sw.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey
+          });
+          const token = JSON.stringify(subscription);
+          console.log(token);
+        }
+      });
+    </script>
+  </body>
+</html>
